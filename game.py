@@ -1,4 +1,4 @@
-"""A simple text-based terminal game."""
+"""Cyber Neon Heist — a terminal-based grid game."""
 
 import random
 
@@ -49,19 +49,25 @@ def reset_game() -> None:
     spawn_hazard()
 
 
+PLAYER_EMOJI = "🤖"
+COLLECTIBLE_EMOJI = "💾"
+HAZARD_EMOJI = "👾"
+EMPTY_EMOJI = "·"
+
+
 def draw_grid(px: int, py: int) -> None:
-    """Print the 5x5 grid, marking the player [P], collectible [C], and hazard [X]."""
+    """Print the 5x5 grid with themed emojis."""
     for row in range(GRID_SIZE):
         line = ""
         for col in range(GRID_SIZE):
             if col == px and row == py:
-                line += "[P]"
+                line += PLAYER_EMOJI + " "
             elif col == collectible_x and row == collectible_y:
-                line += "[C]"
+                line += COLLECTIBLE_EMOJI + " "
             elif col == hazard_x and row == hazard_y:
-                line += "[X]"
+                line += HAZARD_EMOJI + " "
             else:
-                line += "[ ]"
+                line += EMPTY_EMOJI + " "
         print(line)
     print()  # blank line after the grid
 
@@ -76,9 +82,16 @@ def main() -> None:
         reset_game()
 
         print("\033[2J\033[H", end="")
-        print("Welcome to the Grid Game!")
+        print("╔════════════════════════╗")
+        print("║   Cyber Neon Heist     ║")
+        print("╚════════════════════════╝")
+        print()
+        print("You are a rogue AI drone infiltrating a high-security")
+        print("mega-corp server network. Bypass the firewalls to extract")
+        print("encrypted data cores before the system formats your hard drive.")
+        print()
         print("WASD to move  |  quit to exit\n")
-        print(f"Score: {score}")
+        print(f"Data Cores: {score}")
         draw_grid(player_x, player_y)
 
         # --- Inner game loop: runs until win, loss, or quit ---
@@ -117,7 +130,7 @@ def main() -> None:
 
             # Redraw the grid after every turn
             print("\033[2J\033[H", end="")
-            print(f"Score: {score}")
+            print(f"Data Cores: {score}")
             draw_grid(player_x, player_y)
 
         # --- Round ended — show result and ask to play again ---
@@ -127,10 +140,12 @@ def main() -> None:
 
         if result == "win":
             print("\033[2J\033[H", end="")
-            print("Congratulations! You collected all 10 items!")
+            print("System Breached! You successfully extracted")
+            print("the data cores and escaped undetected.")
         elif result == "lose":
             print("\033[2J\033[H", end="")
-            print("Game Over! You stepped on a hazard.")
+            print("Connection Terminated! The corporate firewall")
+            print("detected your presence and wiped your mainframe.")
 
         while True:
             again = input("Play again? (y/n): ").strip().lower()
