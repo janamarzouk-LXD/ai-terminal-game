@@ -39,6 +39,16 @@ def spawn_hazard() -> None:
             break
 
 
+def reset_game() -> None:
+    """Reset all game state for a new round."""
+    global player_x, player_y, score, collectible_x, collectible_y, hazard_x, hazard_y
+    player_x = 0
+    player_y = 0
+    score = 0
+    spawn_collectible()
+    spawn_hazard()
+
+
 def draw_grid(px: int, py: int) -> None:
     """Print the 5x5 grid, marking the player [P], collectible [C], and hazard [X]."""
     for row in range(GRID_SIZE):
@@ -57,65 +67,81 @@ def draw_grid(px: int, py: int) -> None:
 
 
 def main() -> None:
-    """Main game loop — movement, collectible pickup, hazard detection, and win condition."""
+    """Outer loop — runs rounds of the game and handles the play-again prompt."""
     global player_x, player_y, score, collectible_x, collectible_y, hazard_x, hazard_y
 
     WIN_SCORE = 10
 
-    spawn_collectible()
-    spawn_hazard()
-
-    print("\033[2J\033[H", end="")
-    print("Welcome to the Grid Game!")
-    print("WASD to move  |  quit to exit\n")
-    print(f"Score: {score}")
-    draw_grid(player_x, player_y)
-
     while True:
-        command = input("> ").strip().lower()
+        reset_game()
 
-        if command == "quit":
-            print("Thanks for playing, mate!")
-            break
-
-        moved = False
-
-        if command == "w" and player_y > 0:
-            player_y -= 1
-            moved = True
-        elif command == "s" and player_y < GRID_SIZE - 1:
-            player_y += 1
-            moved = True
-        elif command == "a" and player_x > 0:
-            player_x -= 1
-            moved = True
-        elif command == "d" and player_x < GRID_SIZE - 1:
-            player_x += 1
-            moved = True
-        elif command:
-            print(f"Unknown command: {command}")
-
-        # Check if the player picked up the collectible
-        if player_x == collectible_x and player_y == collectible_y:
-            score += 1
-            if score >= WIN_SCORE:
-                print("\033[2J\033[H", end="")
-                print("Congratulations! You collected all 10 items!")
-                print("Thanks for playing, mate!")
-                break
-            spawn_collectible()
-
-        # Check if the player stepped on a hazard
-        if player_x == hazard_x and player_y == hazard_y:
-            print("\033[2J\033[H", end="")
-            print("Game Over! You stepped on a hazard.")
-            print("Thanks for playing, mate!")
-            break
-
-        # Redraw the grid after every turn
         print("\033[2J\033[H", end="")
+        print("Welcome to the Grid Game!")
+        print("WASD to move  |  quit to exit\n")
         print(f"Score: {score}")
         draw_grid(player_x, player_y)
+
+        # --- Inner game loop: runs until win, loss, or quit ---
+        result = None  # 'win', 'lose', or 'quit'
+
+        while result is None:
+            command = input("> ").strip().lower()
+
+            if command == "quit":
+                result = "quit"
+                break
+
+            if command == "w" and player_y > 0:
+                player_y -= 1
+            elif command == "s" and player_y < GRID_SIZE - 1:
+                player_y += 1
+            elif command == "a" and player_x > 0:
+                player_x -= 1
+            elif command == "d" and player_x < GRID_SIZE - 1:
+                player_x += 1
+            elif command:
+                print(f"Unknown command: {command}")
+
+            # Check if the player picked up the collectible
+            if player_x == collectible_x and player_y == collectible_y:
+                score += 1
+                if score >= WIN_SCORE:
+                    result = "win"
+                    break
+                spawn_collectible()
+
+            # Check if the player stepped on a hazard
+            if player_x == hazard_x and player_y == hazard_y:
+                result = "lose"
+                break
+
+            # Redraw the grid after every turn
+            print("\033[2J\033[H", end="")
+            print(f"Score: {score}")
+            draw_grid(player_x, player_y)
+
+        # --- Round ended — show result and ask to play again ---
+        if result == "quit":
+            print("Thanks for playing, mate!")
+            break
+
+        if result == "win":
+            print("\033[2J\033[H", end="")
+            print("Congratulations! You collected all 10 items!")
+        elif result == "lose":
+            print("\033[2J\033[H", end="")
+            print("Game Over! You stepped on a hazard.")
+
+        while True:
+            again = input("Play again? (y/n): ").strip().lower()
+            if again == "y":
+                print()
+                break  # back to outer loop → reset_game()
+            elif again == "n":
+                print("Thanks for playing, mate!")
+                return
+            else:
+                print("Please enter 'y' or 'n'.")
 
 
 if __name__ == "__main__":
