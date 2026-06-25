@@ -11,22 +11,36 @@ player_y = 0
 score = 0
 collectible_x = 0
 collectible_y = 0
+hazard_x = 0
+hazard_y = 0
 
 
 def spawn_collectible() -> None:
-    """Place the collectible at a random position not occupied by the player."""
+    """Place the collectible at a random position not occupied by the player or hazard."""
     global collectible_x, collectible_y
     while True:
         x = random.randint(0, GRID_SIZE - 1)
         y = random.randint(0, GRID_SIZE - 1)
-        if (x, y) != (player_x, player_y):
+        if (x, y) != (player_x, player_y) and (x, y) != (hazard_x, hazard_y):
             collectible_x = x
             collectible_y = y
             break
 
 
+def spawn_hazard() -> None:
+    """Place the hazard at a random position not occupied by the player or collectible."""
+    global hazard_x, hazard_y
+    while True:
+        x = random.randint(0, GRID_SIZE - 1)
+        y = random.randint(0, GRID_SIZE - 1)
+        if (x, y) != (player_x, player_y) and (x, y) != (collectible_x, collectible_y):
+            hazard_x = x
+            hazard_y = y
+            break
+
+
 def draw_grid(px: int, py: int) -> None:
-    """Print the 5x5 grid, marking the player [P] and collectible [C]."""
+    """Print the 5x5 grid, marking the player [P], collectible [C], and hazard [X]."""
     for row in range(GRID_SIZE):
         line = ""
         for col in range(GRID_SIZE):
@@ -34,6 +48,8 @@ def draw_grid(px: int, py: int) -> None:
                 line += "[P]"
             elif col == collectible_x and row == collectible_y:
                 line += "[C]"
+            elif col == hazard_x and row == hazard_y:
+                line += "[X]"
             else:
                 line += "[ ]"
         print(line)
@@ -41,12 +57,13 @@ def draw_grid(px: int, py: int) -> None:
 
 
 def main() -> None:
-    """Main game loop — movement, collectible pickup, and win condition."""
-    global player_x, player_y, score, collectible_x, collectible_y
+    """Main game loop — movement, collectible pickup, hazard detection, and win condition."""
+    global player_x, player_y, score, collectible_x, collectible_y, hazard_x, hazard_y
 
     WIN_SCORE = 10
 
     spawn_collectible()
+    spawn_hazard()
 
     print("\033[2J\033[H", end="")
     print("Welcome to the Grid Game!")
@@ -87,6 +104,13 @@ def main() -> None:
                 print("Thanks for playing, mate!")
                 break
             spawn_collectible()
+
+        # Check if the player stepped on a hazard
+        if player_x == hazard_x and player_y == hazard_y:
+            print("\033[2J\033[H", end="")
+            print("Game Over! You stepped on a hazard.")
+            print("Thanks for playing, mate!")
+            break
 
         # Redraw the grid after every turn
         print("\033[2J\033[H", end="")
