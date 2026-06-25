@@ -21,9 +21,11 @@ def draw_grid(px: int, py: int) -> None:
 
 
 def main() -> None:
-    """Main game loop that draws the grid and waits for input."""
+    """Main game loop — draws the grid, handles WASD movement, and re-renders."""
+    global player_x, player_y
+
     print("Welcome to the Grid Game!")
-    print("Type 'quit' to exit.\n")
+    print("WASD to move  |  quit to exit\n")
 
     draw_grid(player_x, player_y)
 
@@ -33,9 +35,27 @@ def main() -> None:
         if command == "quit":
             print("Thanks for playing, mate!")
             break
+
+        moved = False
+
+        if command == "w" and player_y > 0:
+            player_y -= 1
+            moved = True
+        elif command == "s" and player_y < GRID_SIZE - 1:
+            player_y += 1
+            moved = True
+        elif command == "a" and player_x > 0:
+            player_x -= 1
+            moved = True
+        elif command == "d" and player_x < GRID_SIZE - 1:
+            player_x += 1
+            moved = True
         elif command:
             print(f"Unknown command: {command}")
-            print()
+
+        # Redraw the grid after every turn
+        print("\033[2J\033[H", end="")
+        draw_grid(player_x, player_y)
 
 
 if __name__ == "__main__":
